@@ -1,6 +1,6 @@
 {
   "name": "hu-std-lookup-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "High-performance Haramaya University student lookup and dormitory placement SDK",
   "main": "src/index.js",
   "types": "src/index.d.ts",
