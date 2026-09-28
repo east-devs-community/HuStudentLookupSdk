@@ -83,3 +83,27 @@ test('load and constructor use predefined dataset from src/data.json without arg
   const direct = new HuStdLookupSdk();
   assert.strictEqual(direct.size, 12322);
 });
+
+test('lookups and roommates for Dagim Alemu and Elbetel Taye match expected data', () => {
+  const dagim = sdk.getById('0276/15');
+  assert.ok(dagim);
+  assert.strictEqual(dagim.name, 'Dagim Alemu Alolo');
+  assert.strictEqual(dagim.dept, 'SWE');
+  assert.strictEqual(dagim.campus, 'Main');
+  assert.strictEqual(dagim.dorm, '120');
+
+  const dagimMates = sdk.getDormmates('0276/15');
+  assert.strictEqual(dagimMates.length, 3);
+  assert.ok(dagimMates.every((m) => m.dorm === '120' && m.building === 'SAT 4A'));
+
+  const elbetel = sdk.getById('1228/18');
+  assert.ok(elbetel);
+  assert.strictEqual(elbetel.name, 'Elbetel Taye Ladankilet');
+  assert.strictEqual(elbetel.dept, 'Meng');
+  assert.strictEqual(elbetel.campus, 'Hit');
+  assert.strictEqual(elbetel.dorm, '44');
+
+  const elbetelMates = sdk.getDormmates('1228/18');
+  assert.strictEqual(elbetelMates.length, 5);
+  assert.ok(elbetelMates.every((m) => m.dorm === '44' && m.building === 'Block LA'));
+});
