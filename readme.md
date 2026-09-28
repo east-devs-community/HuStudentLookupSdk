@@ -1,47 +1,116 @@
 # HuStdLookupSdk
 
-> High-performance in-memory lookup, search, and dormitory placement SDK for Haramaya University student records.
+> A simple and fast tool to find student and dorm room information for Haramaya University.
 
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-blue.svg)]()
 [![TypeScript](https://img.shields.io/badge/types-included-blue.svg)]()
 
-`HuStdLookupSdk` provides lightning-fast search and retrieval across 12,000+ Haramaya University student placement records. Built with custom inverted indexes, binary search prefix matching, and bitmap set operations, queries execute in sub-millisecond time with **zero external dependencies**.
+`HuStdLookupSdk` is an easy-to-use JavaScript library for student projects. It helps you search and look up information for more than 12,000 Haramaya University students and their dorm rooms. 
+
+It comes with all student data built-in, works completely offline without any internet connection, and requires zero extra tools to install.
 
 ---
 
-## Features
+## What It Can Do
 
-- ⚡ **O(1) Instant Lookups**: Retrieve student details by ID in constant time. Automatically strips `UGPR` prefixes and normalizes whitespace and casing (e.g. `"UGPR1175/15"` $\rightarrow$ `"1175/15"`).
-- 🔍 **Prefix & Multi-Word Name Search**: Fast tokenized name search using sorted token indexes and binary search. Every entered word matches the beginning of a name token (e.g. `"abd wash"` finds `"Abdukadir ... Wash..."`).
-- 🎯 **Multi-Field Filtering**: Filter students by `sex`, `dept`, `campus`, `building`, `year`, and `dorm`.
-- 🔀 **OR Query Support**: Supply an array of values to match any of them (e.g. `campus: ['Hit', 'Harar']`).
-- 👥 **Roommate Resolution**: Instantly retrieve full student profiles for all roommates assigned to the same room.
-- 📊 **Faceted Aggregations**: Extract distinct counts for any filter field to power UI dropdowns, filters, and analytics.
-- 📄 **Pagination**: Built-in `limit` and `offset` support for infinite scroll or paginated interfaces.
-- 📦 **Zero Dependencies & TypeScript Ready**: Uses native Node.js data structures (`Map`, `Uint8Array`) and ships with comprehensive TypeScript definitions (`src/index.d.ts`).
-- 🔄 **Backwards Compatible**: Exports legacy `DormSDK` as an alias.
+- Find by ID: Look up any student quickly with their ID. It does not care about extra spaces, capital letters, or if you add "UGPR" at the front (for example, `"UGPR0276/15"` and `"0276/15"` both work).
+- Search by Name: Type one or more parts of a name to find students (for example, typing `"dagim alemu"` finds `"Dagim Alemu Alolo"`).
+- Filter by Category: Find students by gender, department, campus, building, dorm room, or year.
+- Search Multiple Things at Once: Search across multiple campuses or departments by passing a list (for example, `['Main', 'Hit']`).
+- Find Roommates: Get full details for all students who share the same dorm room.
+- Count Options for Dropdowns: Get a list of all campus or department names and how many students are in each, perfect for dropdown menus.
+- Split Results into Pages: Show results in small pages so your website stays fast.
+- Zero Setup: Works right out of the box with standard Node.js.
+- Works with Older Code: Also supports the previous name `DormSDK`.
 
 ---
 
-## Directory Structure
+## Project Structure
 
 ```text
 .
-├── package.json           # Package configuration & test scripts
-├── readme.md              # Documentation
-├── sdk.test.js            # Node test suite
+├── package.json           # Project settings and scripts
+├── readme.md              # Documentation and guide
+├── sdk.test.js            # Automated tests
 └── src/
-    ├── HuStdLookupSdk.js  # Core SDK implementation
-    ├── data.json          # Predefined student placement dataset
-    ├── index.d.ts         # TypeScript declaration file
-    └── index.js           # Main package entry point
+    ├── HuStdLookupSdk.js  # Main SDK code
+    ├── data.json          # Built-in student dataset
+    ├── index.d.ts         # Type hints for code editors
+    └── index.js           # Package entry point
 ```
 
 ---
 
+## Project Ideas and Use Cases
+
+Because this tool works offline with no internet needed and answers searches instantly, students can use it to build many useful campus tools:
+
+### 1. Student ID Check and Auto-Fill (Forms and Registration)
+When students sign up for a campus club (like GDSC or Red Cross), a hackathon, or a campus event, you can check their ID and fill in their details automatically:
+- Check that the entered ID belongs to a real student.
+- Automatically fill in their full name, department, campus, and year so they do not have to type it by hand.
+- Stop fake sign-ups and typing mistakes.
+
+Example using an Express.js backend server:
+
+```javascript
+app.post('/api/register', (req, res) => {
+  const { studentId, email } = req.body;
+
+  // 1. Check if the student ID exists in the university data
+  const student = sdk.getById(studentId);
+  if (!student) {
+    return res.status(400).json({ error: 'Please enter a valid Haramaya University student ID.' });
+  }
+
+  // 2. Automatically use their real official information
+  const newMember = {
+    id: student.id,
+    fullName: student.name,
+    department: student.dept,
+    campus: student.campus,
+    year: student.year,
+    email: email
+  };
+
+  // 3. Save newMember to your database...
+  res.json({ success: true, member: newMember });
+});
+```
+
+### 2. Telegram Bot for Dorm and Roommate Lookups
+Build a Telegram bot where students can send a message to find their room:
+- Send `/dorm 0276/15` to see their building name, floor, and room number.
+- Send `/roommates 0276/15` to see the names of students sharing the room before arriving on campus.
+- Search for a classmate by name directly inside Telegram chat.
+
+### 3. Roommate Connect Website or Mobile App
+Create a simple web or mobile app (using React, Flutter, or HTML):
+- Students log in or enter their ID to see their assigned room.
+- Show students who their roommates are so they can connect, introduce themselves, and plan what items to bring before campus opens.
+
+### 4. Campus Charts and Statistics
+Build a dashboard with charts showing university information:
+- How many students are on each campus (Main, HiT, Harar, VET).
+- Number of male and female students in each department.
+- How full each dorm building is.
+
+### 5. Lost and Found Helper
+If someone finds a lost student ID card or notebook on campus:
+- Enter the ID on a simple campus search page.
+- Find the student's name, dorm building, and room number so you can return the lost item directly to their room.
+
+### 6. Offline Check-In for Campus Events and Elections
+Because all data is saved inside your computer and does not need internet:
+- Build a check-in scanner for library entry or student union elections that still works even if the campus Wi-Fi stops working.
+
+---
+
 ## Installation
+
+Install the package into your project:
 
 ```bash
 npm install hu-std-lookup-sdk
@@ -51,35 +120,38 @@ npm install hu-std-lookup-sdk
 
 ## Quick Start
 
-### 1. Import
+### 1. Import the Library
 
+In CommonJS (standard Node.js):
 ```javascript
-// CommonJS (both default and named imports work)
 const HuStdLookupSdk = require('hu-std-lookup-sdk');
-// or: const { HuStdLookupSdk } = require('hu-std-lookup-sdk');
-
-// ES Modules / TypeScript
-import HuStdLookupSdk, { StudentRecord } from 'hu-std-lookup-sdk';
 ```
 
-### 2. Initialization
+In ES Modules or TypeScript:
+```javascript
+import HuStdLookupSdk from 'hu-std-lookup-sdk';
+```
+
+### 2. Load the Data
+
+Load the built-in student records (takes no settings):
 
 ```javascript
-// Load the SDK with the embedded dataset (takes no arguments)
 const sdk = HuStdLookupSdk.load();
 ```
 
 ---
 
-## Usage Examples
+## Step-by-Step Code Examples
 
-### 1. Lookup Student by ID
+### 1. Look Up a Student by ID
 
 #### Example A: Dagim Alemu (Software Engineering, Main Campus)
 ```javascript
 const dagim = sdk.getById('0276/15');
 console.log(dagim);
 /*
+Output:
 {
   id: '0276/15',
   name: 'Dagim Alemu Alolo',
@@ -93,8 +165,9 @@ console.log(dagim);
 }
 */
 
-// Case and spacing are normalized; 'UGPR' prefix is automatically handled:
+// Extra spaces and lowercase work too:
 sdk.getById(' 0276/15 ');
+// You can also include the "UGPR" letters:
 sdk.getById('UGPR0276/15');
 ```
 
@@ -103,6 +176,7 @@ sdk.getById('UGPR0276/15');
 const elbetel = sdk.getById('1228/18');
 console.log(elbetel);
 /*
+Output:
 {
   id: '1228/18',
   name: 'Elbetel Taye Ladankilet',
@@ -119,39 +193,43 @@ console.log(elbetel);
 
 ---
 
-### 2. Get Roommates (Dormmates)
+### 2. Get Full Details for Roommates
 
-Retrieve full student profiles for everyone sharing the same dorm room (excluding self):
+The `getDormmates()` method gives you full student details for everyone sharing the same room (without including yourself):
 
 ```javascript
-// Roommates of Dagim Alemu in SAT 4A, Dorm 120:
-const dagimMates = sdk.getDormmates('0276/15');
-dagimMates.forEach((mate) => {
-  console.log(`${mate.name} - ${mate.dept} (Dorm ${mate.dorm})`);
+// Get roommates of Dagim Alemu in Dorm 120 (SAT 4A building):
+const dagimRoommates = sdk.getDormmates('0276/15');
+dagimRoommates.forEach((mate) => {
+  console.log(`${mate.name} - Department: ${mate.dept} (Dorm ${mate.dorm})`);
 });
-// Output:
-// Chuol Nyuon Dak - SWE (Dorm 120)
-// Dawit Mengesha Beriso - SWE (Dorm 120)
-// Debela Kebede Bekele - SWE (Dorm 120)
+/*
+Output:
+Chuol Nyuon Dak - Department: SWE (Dorm 120)
+Dawit Mengesha Beriso - Department: SWE (Dorm 120)
+Debela Kebede Bekele - Department: SWE (Dorm 120)
+*/
 
-// Roommates of Elbetel Taye in Block LA, Dorm 44:
-const elbetelMates = sdk.getDormmates('1228/18');
-elbetelMates.forEach((mate) => {
-  console.log(`${mate.name} - ${mate.dept} (Dorm ${mate.dorm})`);
+// Get roommates of Elbetel Taye in Dorm 44 (Block LA building):
+const elbetelRoommates = sdk.getDormmates('1228/18');
+elbetelRoommates.forEach((mate) => {
+  console.log(`${mate.name} - Department: ${mate.dept} (Dorm ${mate.dorm})`);
 });
-// Output:
-// Beimnet Zelalem Desta - Meng (Dorm 44)
-// Eyerus Tesfaye Garedew - Meng (Dorm 44)
-// Hlina Solomon Maru - Meng (Dorm 44)
-// Iftu Berhanu Dabali - Meng (Dorm 44)
-// Kemer Emam Essa - Meng (Dorm 44)
+/*
+Output:
+Beimnet Zelalem Desta - Department: Meng (Dorm 44)
+Eyerus Tesfaye Garedew - Department: Meng (Dorm 44)
+Hlina Solomon Maru - Department: Meng (Dorm 44)
+Iftu Berhanu Dabali - Department: Meng (Dorm 44)
+Kemer Emam Essa - Department: Meng (Dorm 44)
+*/
 ```
 
 ---
 
-### 3. Search by Name (Prefix Matching)
+### 3. Search for Students by Name
 
-All search tokens match the beginning of words in the student's name:
+You only need to type parts of a name:
 
 ```javascript
 // Search for Dagim Alemu in Software Engineering:
@@ -160,9 +238,9 @@ const sweResults = sdk.search({
   dept: 'SWE',
   campus: 'Main'
 });
-console.log(`Found ${sweResults.total} match(es):`);
+console.log(`Found ${sweResults.total} student(s):`);
 sweResults.results.forEach((s) => console.log(`- ${s.name} (${s.id})`));
-// - Dagim Alemu Alolo (0276/15)
+// Output: - Dagim Alemu Alolo (0276/15)
 
 // Search for Elbetel in Mechanical Engineering (Meng):
 const mengResults = sdk.search({
@@ -170,25 +248,25 @@ const mengResults = sdk.search({
   dept: 'Meng',
   campus: 'Hit'
 });
-console.log(`Found ${mengResults.total} match(es):`);
+console.log(`Found ${mengResults.total} student(s):`);
 mengResults.results.forEach((s) => console.log(`- ${s.name} (${s.id})`));
-// - Elbetel Taye Ladankilet (1228/18)
+// Output: - Elbetel Taye Ladankilet (1228/18)
 ```
 
 ---
 
-### 4. Filter by Campus, Department, Sex, Year, or Building
+### 4. Filter by Category
 
-Combine multiple criteria easily:
+Combine different options to narrow down your search:
 
 ```javascript
-// Find 5th-year Software Engineering students on Main campus:
-const sweStudents = sdk.search({
+// Find all 5th-year Software Engineering students on Main campus:
+const fifthYearSwe = sdk.search({
   dept: 'SWE',
   campus: 'Main',
   year: '5th'
 });
-console.log(`Total 5th year SWE students: ${sweStudents.total}`);
+console.log(`Total students: ${fifthYearSwe.total}`);
 
 // Find 2nd-year female Mechanical Engineering students:
 const femaleMechStudents = sdk.search({
@@ -196,114 +274,115 @@ const femaleMechStudents = sdk.search({
   sex: 'F',
   year: '2nd'
 });
-console.log(`Matched: ${femaleMechStudents.total}`);
+console.log(`Total students: ${femaleMechStudents.total}`);
 ```
 
 ---
 
-### 5. OR Queries (Multiple Values) & Pagination
+### 5. Search Multiple Values and Show in Pages
 
-Pass an array to any filter field:
+Pass an array of names to search across multiple choices at once, and set a page size:
 
 ```javascript
 const engineeringStudents = sdk.search({
   dept: ['SWE', 'Meng'],
   campus: ['Main', 'Hit'],
-  limit: 10,
-  offset: 0
+  limit: 10,  // Show only 10 students
+  offset: 0   // Start from the first student
 });
 
-console.log(`Total matching students: ${engineeringStudents.total}`);
-console.log(`Current page results: ${engineeringStudents.results.length}`);
+console.log(`Total matches in university: ${engineeringStudents.total}`);
+console.log(`Students on this page: ${engineeringStudents.results.length}`);
 ```
 
-### 6. Aggregations / Facets for Dropdowns
+---
 
-Get value counts for any field to populate dropdown options:
+### 6. Get Counts for Dropdown Menus
+
+Use `facets()` to get all unique values and the number of students for each. This makes creating dropdowns very easy:
 
 ```javascript
+// Get all campus names and student counts:
 const campuses = sdk.facets('campus');
 console.log(campuses);
-// [
-//   { value: 'Main', count: 6800 },
-//   { value: 'Hit', count: 2650 },
-//   { value: 'Harar', count: 2575 },
-//   { value: 'VET', count: 186 }
-// ]
+/*
+Output:
+[
+  { value: 'Main', count: 6800 },
+  { value: 'Hit', count: 2650 },
+  { value: 'Harar', count: 2575 },
+  { value: 'VET', count: 186 }
+]
+*/
 
+// Get all department names:
 const departments = sdk.facets('dept');
-console.log(`Total departments: ${departments.length}`);
+console.log(`Total departments available: ${departments.length}`);
 ```
 
 ---
 
-## API Reference
+## Reference Guide
 
-### `HuStdLookupSdk`
+### Functions and Methods
 
-#### Static Methods
+- `HuStdLookupSdk.load()`
+  Loads the built-in student dataset. Takes no settings and returns an SDK instance.
 
-- `HuStdLookupSdk.load(): HuStdLookupSdk`
-  Loads an SDK instance with the predefined dataset from `src/data.json` (takes no arguments).
+- `sdk.getById(id)`
+  Finds a single student by their ID number. Returns the student object, or `null` if not found.
 
-#### Constructor
+- `sdk.getDormmates(id)`
+  Finds all students who share the same dorm room with the given student ID. Returns a list of student objects (excluding the student themselves).
 
-- `new HuStdLookupSdk(data?: object)`
-  Initializes an SDK instance directly. Defaults to the predefined dataset if omitted.
+- `sdk.search(options)`
+  Searches students by name or filters. You can pass:
+  - `name`: Text to match in the student name.
+  - `sex`: `'M'` or `'F'`.
+  - `dept`: Department code (like `'SWE'`, `'Meng'`).
+  - `campus`: Campus name (like `'Main'`, `'Hit'`, `'Harar'`, `'VET'`).
+  - `building`: Dorm building name (like `'SAT 4A'`, `'Block LA'`).
+  - `dorm`: Dorm room number (like `'120'`, `'44'`).
+  - `year`: Academic year (like `'1st'`, `'2nd'`, `'5th'`).
+  - `limit`: Maximum number of results to return (default is 50).
+  - `offset`: Number of results to skip for pages (default is 0).
 
-#### Instance Properties
+- `sdk.facets(fieldName)`
+  Returns a list of all unique values and counts for that field (for example, `'campus'` or `'dept'`).
 
-- `sdk.records: StudentRecord[]`: Array of all student records sorted A-Z by name.
-- `sdk.size: number`: Total number of student records.
-- `sdk.campuses: string[]`: List of available campuses.
-- `sdk.departments: string[]`: List of available departments.
+### Properties
 
-#### Instance Methods
-
-- `sdk.getById(id: string): StudentRecord | null`
-  O(1) lookup. Returns the student record or `null` if not found.
-- `sdk.getDormmates(id: string): StudentRecord[]`
-  Returns an array of resolved student records for roommates in the same room.
-- `sdk.search(query?: SearchQuery): { total: number, results: StudentRecord[] }`
-  Performs multi-criteria filtering and name prefix matching.
-- `sdk.facets(field: string): Array<{ value: string, count: number }>`
-  Returns distinct values and counts for the specified field (`'sex'`, `'dept'`, `'campus'`, `'building'`, `'year'`, `'dorm'`).
-
-### Supported Filter Fields
-
-```javascript
-const { FILTER_FIELDS } = require('./src');
-// ['sex', 'dept', 'campus', 'building', 'year', 'dorm']
-```
+- `sdk.records`: Array of all 12,000+ students sorted from A to Z by name.
+- `sdk.size`: Total number of students.
+- `sdk.campuses`: List of all university campuses.
+- `sdk.departments`: List of all university departments.
 
 ---
 
-## Student Record Schema
+## Student Record Fields
 
-Each student record conforms to the following schema:
+Each student has the following information:
 
-| Field | Type | Description |
+| Field Name | Type | Description |
 | :--- | :--- | :--- |
-| `id` | `string` | Student ID (e.g. `'0276/15'`, `'1228/18'`) |
-| `name` | `string` | Full student name |
-| `sex` | `string` | Gender (`'M'` or `'F'`) |
-| `dept` | `string` | Academic department |
-| `campus` | `string` | Campus name (`'Harar'`, `'Hit'`, `'Main'`, `'VET'`) |
-| `building` | `string` | Dormitory block/building |
-| `dorm` | `string` | Room number |
-| `year` | `string` | Academic year (e.g. `'I'`, `'II'`, `'III'`, `'IV'`, `'V'`) |
-| `dormmates` | `string[]` | Array of roommate student IDs sharing the same room |
+| `id` | `string` | Student ID number (for example, `'0276/15'`, `'1228/18'`) |
+| `name` | `string` | Full name of the student |
+| `sex` | `string` | Gender (`'M'` for male, `'F'` for female) |
+| `dept` | `string` | Department code |
+| `campus` | `string` | Campus name (`'Main'`, `'Hit'`, `'Harar'`, `'VET'`) |
+| `building` | `string` | Dorm building or block |
+| `dorm` | `string` | Dorm room number |
+| `year` | `string` | Study year |
+| `dormmates` | `string[]` | List of student IDs for roommates in the same room |
 
 ---
 
-## Running Tests
+## Testing
 
-Run the native Node.js test suite:
+To run the automated tests:
 
 ```bash
 npm test
-# or directly:
-node --test sdk.test.js
 ```
 
 ---
