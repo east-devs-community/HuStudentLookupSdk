@@ -41,25 +41,31 @@
 
 ---
 
+## Installation
+
+```bash
+npm install hu-std-lookup-sdk
+```
+
+---
+
 ## Quick Start
 
-### 1. Installation / Import
+### 1. Import
 
 ```javascript
-// CommonJS
-const { HuStdLookupSdk } = require('./src');
-// or require the package directory:
-// const HuStdLookupSdk = require('.');
+// CommonJS (both default and named imports work)
+const HuStdLookupSdk = require('hu-std-lookup-sdk');
+// or: const { HuStdLookupSdk } = require('hu-std-lookup-sdk');
 
 // ES Modules / TypeScript
-import HuStdLookupSdk, { StudentRecord } from './src';
+import HuStdLookupSdk, { StudentRecord } from 'hu-std-lookup-sdk';
 ```
 
 ### 2. Initialization
 
-Load the predefined dataset directly using `HuStdLookupSdk.load()` (takes no arguments):
-
 ```javascript
+// Load the SDK with the embedded dataset (takes no arguments)
 const sdk = HuStdLookupSdk.load();
 ```
 
